@@ -78,14 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "ResumeBuilder" },
+      { name: "description", content: "AI Resume Pro builds ATS-friendly resumes with AI-powered analysis, content generation, and optimization." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "ResumeBuilder" },
+      { property: "og:description", content: "AI Resume Pro builds ATS-friendly resumes with AI-powered analysis, content generation, and optimization." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "ResumeBuilder" },
+      { name: "twitter:description", content: "AI Resume Pro builds ATS-friendly resumes with AI-powered analysis, content generation, and optimization." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/272b566e-08a1-4e88-b4b5-6bce4c41f2ba/id-preview-669938f3--8432838e-66e3-4487-89d4-63888cb1ae6d.lovable.app-1780385892128.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/272b566e-08a1-4e88-b4b5-6bce4c41f2ba/id-preview-669938f3--8432838e-66e3-4487-89d4-63888cb1ae6d.lovable.app-1780385892128.png" },
     ],
     links: [
       {
