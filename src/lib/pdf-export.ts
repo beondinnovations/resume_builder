@@ -259,7 +259,12 @@ async function buildZip(files: { path: string; data: string }[]): Promise<Blob> 
   ev.setUint32(12, centralSize, true);
   ev.setUint32(16, offset, true);
 
-  return new Blob([...fileRecords, ...centralRecords, end], {
+  const parts: BlobPart[] = [
+    ...fileRecords.map((u) => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer),
+    ...centralRecords.map((u) => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer),
+    end.buffer.slice(end.byteOffset, end.byteOffset + end.byteLength) as ArrayBuffer,
+  ];
+  return new Blob(parts, {
     type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   });
 }
