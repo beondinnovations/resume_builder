@@ -10,7 +10,10 @@ import { scoreResume } from "@/lib/ai.functions";
 import { resumeToText } from "@/lib/parse-resume";
 import { useResumeStore } from "@/lib/resume-store";
 
-type Score = Awaited<ReturnType<typeof import("@/lib/ai.functions").scoreResume>>;
+type Score = {
+  ats: number; readability: number; keyword: number; professionalism: number;
+  missingKeywords: string[]; suggestions: string[]; matchPercent: number;
+};
 
 export function ScorePanel() {
   const { data } = useResumeStore();
