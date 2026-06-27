@@ -1,0 +1,141 @@
+@import "tailwindcss";
+@source "../src";
+@source ".";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-rule: var(--rule);
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+:root {
+  --radius: 0.25rem;
+
+  /* Paper & Ink — editorial, ATS-clean */
+  --paper: oklch(0.972 0.008 85);          /* #f5f3ee */
+  --paper-2: oklch(0.93 0.012 85);         /* #e8e4dd */
+  --ink: oklch(0.18 0 0);                  /* #2d2d2d */
+  --ink-deep: oklch(0.08 0 0);             /* #0d0d0d */
+  --rule: oklch(0.85 0.01 85);
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+
+  --card: oklch(1 0 0);
+  --card-foreground: var(--ink);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--ink);
+
+  --primary: var(--ink-deep);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-2);
+  --muted-foreground: oklch(0.42 0.01 85);
+  --accent: oklch(0.88 0.02 85);
+  --accent-foreground: var(--ink);
+
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --success: oklch(0.55 0.13 150);
+  --warn: oklch(0.7 0.15 75);
+
+  --border: var(--rule);
+  --input: var(--rule);
+  --ring: var(--ink);
+
+  --font-display: "Instrument Serif", "Cambria", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+.dark {
+  --paper: oklch(0.16 0 0);
+  --paper-2: oklch(0.22 0 0);
+  --ink: oklch(0.95 0.005 85);
+  --ink-deep: oklch(1 0 0);
+  --rule: oklch(0.3 0 0);
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: oklch(0.2 0 0);
+  --card-foreground: var(--ink);
+  --popover: oklch(0.2 0 0);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--paper-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--paper-2);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.28 0 0);
+  --accent-foreground: var(--ink);
+  --border: var(--rule);
+  --input: var(--rule);
+  --ring: var(--ink);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    font-family: var(--font-sans);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  .rule {
+    border-top: 1px solid var(--color-rule);
+  }
+  /* Resume preview canvas — always print-like, regardless of app theme */
+  .resume-canvas {
+    background: #ffffff;
+    color: #111111;
+    font-family: "Calibri", "Carlito", Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+  .resume-canvas h1,
+  .resume-canvas h2,
+  .resume-canvas h3 {
+    color: #000;
+  }
+}
