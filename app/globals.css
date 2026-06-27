@@ -43,10 +43,10 @@
   --radius: 0.25rem;
 
   /* Paper & Ink — editorial, ATS-clean */
-  --paper: oklch(0.972 0.008 85);          /* #f5f3ee */
-  --paper-2: oklch(0.93 0.012 85);         /* #e8e4dd */
-  --ink: oklch(0.18 0 0);                  /* #2d2d2d */
-  --ink-deep: oklch(0.08 0 0);             /* #0d0d0d */
+  --paper: oklch(0.972 0.008 85); /* #f5f3ee */
+  --paper-2: oklch(0.93 0.012 85); /* #e8e4dd */
+  --ink: oklch(0.18 0 0); /* #2d2d2d */
+  --ink-deep: oklch(0.08 0 0); /* #0d0d0d */
   --rule: oklch(0.85 0.01 85);
 
   --background: var(--paper);
@@ -68,12 +68,13 @@
 
   --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --success: oklch(0.55 0.13 150);
+  --success: #16a34a;
+  --success-foreground: #ffffff;
   --warn: oklch(0.7 0.15 75);
 
   --border: var(--rule);
   --input: var(--rule);
-  --ring: var(--ink);
+  --ring: #0891b2;
 
   --font-display: "Instrument Serif", "Cambria", Georgia, serif;
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
@@ -102,7 +103,9 @@
   --accent-foreground: var(--ink);
   --border: var(--rule);
   --input: var(--rule);
-  --ring: var(--ink);
+  --ring: #22d3ee;
+  --success: #22c55e;
+  --success-foreground: #0d0d0d;
 }
 
 @layer base {
@@ -111,6 +114,20 @@
   }
   html {
     font-family: var(--font-sans);
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
   body {
     background-color: var(--color-background);

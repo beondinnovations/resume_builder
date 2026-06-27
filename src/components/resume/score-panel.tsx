@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-import { Loader2, Target } from "lucide-react";
+import { Loader2, Target, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -10,8 +12,13 @@ import { resumeToText } from "@/lib/parse-resume";
 import { useResumeStore } from "@/lib/resume-store";
 
 type Score = {
-  ats: number; readability: number; keyword: number; professionalism: number;
-  missingKeywords: string[]; suggestions: string[]; matchPercent: number;
+  ats: number;
+  readability: number;
+  keyword: number;
+  professionalism: number;
+  missingKeywords: string[];
+  suggestions: string[];
+  matchPercent: number;
 };
 
 export function ScorePanel() {
@@ -26,50 +33,88 @@ export function ScorePanel() {
       const text = resumeToText(data);
       const res = await scoreResume({ resumeText: text, jobDescription: jd || undefined });
       setResult(res);
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="p-4 space-y-3 bg-card">
-        <div className="flex items-center justify-between">
+    <div className="space-y-5">
+      <Card className="p-5 space-y-4 bg-card">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="font-display text-xl">ATS & Job Match</h3>
-            <p className="text-xs text-muted-foreground">Paste a job description for keyword match analysis.</p>
+            <h3 className="font-display text-xl tracking-tight flex items-center gap-2">
+              <TrendingUp className="size-5" />
+              ATS & Job Match
+            </h3>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Paste a job description for keyword match analysis.
+            </p>
           </div>
-          <Button onClick={run} disabled={loading} className="gap-1.5">
+          <Button
+            onClick={run}
+            disabled={loading}
+            className="gap-1.5 cursor-pointer shrink-0 transition-all duration-200"
+          >
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Target className="size-4" />}
             Analyze
           </Button>
         </div>
-        <Textarea rows={4} value={jd} onChange={(e)=>setJd(e.target.value)} placeholder="Paste a job description (optional)…" />
+        <Textarea
+          rows={5}
+          value={jd}
+          onChange={(e) => setJd(e.target.value)}
+          placeholder="Paste a job description here to compare against your resume..."
+        />
       </Card>
 
       {result && (
-        <Card className="p-4 space-y-4 bg-card">
-          <ScoreBar label="ATS Compatibility" value={result.ats} />
-          <ScoreBar label="Readability" value={result.readability} />
-          <ScoreBar label="Keyword Match" value={result.keyword} />
-          <ScoreBar label="Professionalism" value={result.professionalism} />
+        <Card className="p-5 space-y-5 bg-card">
+          <div className="grid grid-cols-2 gap-4">
+            <ScoreRing label="ATS" value={result.ats} />
+            <ScoreRing label="Readability" value={result.readability} />
+            <ScoreRing label="Keywords" value={result.keyword} />
+            <ScoreRing label="Professional" value={result.professionalism} />
+          </div>
+
           {jd && (
-            <div className="rule pt-3">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">JD Match</div>
-              <div className="text-3xl font-display">{result.matchPercent}%</div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-4">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                JD Match
+              </div>
+              <div className="text-4xl font-display">{result.matchPercent}%</div>
             </div>
           )}
+
           {result.missingKeywords.length > 0 && (
-            <div className="rule pt-3">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Missing keywords</div>
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                <AlertCircle className="size-4" />
+                Missing keywords
+              </div>
               <div className="flex flex-wrap gap-1.5">
-                {result.missingKeywords.map((k, i) => <Badge key={i} variant="outline">{k}</Badge>)}
+                {result.missingKeywords.map((k, i) => (
+                  <Badge key={i} variant="outline" className="text-muted-foreground">
+                    {k}
+                  </Badge>
+                ))}
               </div>
             </div>
           )}
+
           {result.suggestions.length > 0 && (
-            <div className="rule pt-3">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Suggestions</div>
-              <ul className="text-sm space-y-1.5 list-disc ml-5">
-                {result.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                <CheckCircle2 className="size-4" />
+                Suggestions
+              </div>
+              <ul className="text-sm space-y-2">
+                {result.suggestions.map((s, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="text-muted-foreground">•</span>
+                    <span>{s}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           )}
@@ -79,14 +124,16 @@ export function ScorePanel() {
   );
 }
 
-function ScoreBar({ label, value }: { label: string; value: number }) {
+function ScoreRing({ label, value }: { label: string; value: number }) {
+  const color = value >= 80 ? "bg-emerald-500" : value >= 60 ? "bg-amber-500" : "bg-rose-500";
   return (
-    <div>
-      <div className="flex justify-between text-sm mb-1">
-        <span>{label}</span>
-        <span className="font-mono">{value}/100</span>
+    <div className="rounded-lg border border-border bg-secondary/30 p-3">
+      <div className="flex justify-between text-sm mb-1.5">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-mono font-medium">{value}</span>
       </div>
-      <Progress value={value} />
+      <Progress value={value} className="h-2" />
+      <div className={`mt-2 h-1 w-full rounded-full ${color} opacity-20`} />
     </div>
   );
 }

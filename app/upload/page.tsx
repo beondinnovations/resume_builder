@@ -3,39 +3,56 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Upload, Loader2, FileText, CheckCircle2 } from "lucide-react";
+import { Upload, Loader2, FileText, CheckCircle2, FileUp, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { extractTextFromFile } from "@/lib/parse-resume";
 import { extractResume } from "@/lib/ai.functions";
 import { useResumeStore } from "@/lib/resume-store";
+import { createResume, setCurrentResumeId } from "@/lib/resume-storage";
 import { emptyResume } from "@/lib/resume-types";
+
+type ParsedResume = {
+  fullName?: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  linkedin?: string;
+  github?: string;
+  website?: string;
+  summary?: string;
+  skills?: { technical?: string[]; soft?: string[] };
+  experience?: Record<string, unknown>[];
+  education?: Record<string, unknown>[];
+  projects?: Record<string, unknown>[];
+  certifications?: string[];
+  achievements?: string[];
+  languages?: string[];
+};
 
 export default function UploadPage() {
   const router = useRouter();
-  const replace = useResumeStore((s) => s.replace);
   const [dragging, setDragging] = useState(false);
   const [phase, setPhase] = useState<"idle" | "reading" | "parsing">("idle");
 
   const handleFile = useCallback(
     async (file: File) => {
-      if (file.size > 10 * 1024 * 1024)
-        return toast.error("File too large (max 10MB).");
+      if (file.size > 10 * 1024 * 1024) return toast.error("File too large (max 10MB).");
       try {
         setPhase("reading");
         const text = await extractTextFromFile(file);
         if (text.length < 30)
-          throw new Error(
-            "Couldn't extract enough text. Try a different file."
-          );
+          throw new Error("Couldn't extract enough text. Try a different file.");
         setPhase("parsing");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const parsed = (await extractResume({ text: text.slice(0, 40000) })) as Record<string, any>;
+        const parsed = (await extractResume({
+          text: text.slice(0, 40000),
+        })) as ParsedResume;
         const uid = () => Math.random().toString(36).slice(2, 10);
-        replace({
+        const resumeData = {
           ...emptyResume,
-          template: "professional",
+          template: "professional" as const,
           fullName: parsed.fullName ?? "",
           title: parsed.title ?? "",
           email: parsed.email ?? "",
@@ -49,42 +66,43 @@ export default function UploadPage() {
             technical: parsed.skills?.technical ?? [],
             soft: parsed.skills?.soft ?? [],
           },
-          experience: (parsed.experience ?? []).map(
-            (e: Record<string, unknown>) => ({
-              id: uid(),
-              company: String(e.company ?? ""),
-              role: String(e.role ?? ""),
-              location: String(e.location ?? ""),
-              startDate: String(e.startDate ?? ""),
-              endDate: String(e.endDate ?? ""),
-              bullets: Array.isArray(e.bullets) ? (e.bullets as string[]) : [],
-            })
-          ),
-          education: (parsed.education ?? []).map(
-            (e: Record<string, unknown>) => ({
-              id: uid(),
-              school: String(e.school ?? ""),
-              degree: String(e.degree ?? ""),
-              field: String(e.field ?? ""),
-              startDate: String(e.startDate ?? ""),
-              endDate: String(e.endDate ?? ""),
-              details: String(e.details ?? ""),
-            })
-          ),
-          projects: (parsed.projects ?? []).map(
-            (p: Record<string, unknown>) => ({
-              id: uid(),
-              name: String(p.name ?? ""),
-              link: String(p.link ?? ""),
-              description: String(p.description ?? ""),
-              tech: String(p.tech ?? ""),
-            })
-          ),
+          experience: (parsed.experience ?? []).map((e: Record<string, unknown>) => ({
+            id: uid(),
+            company: String(e.company ?? ""),
+            role: String(e.role ?? ""),
+            location: String(e.location ?? ""),
+            startDate: String(e.startDate ?? ""),
+            endDate: String(e.endDate ?? ""),
+            bullets: Array.isArray(e.bullets) ? (e.bullets as string[]) : [],
+          })),
+          education: (parsed.education ?? []).map((e: Record<string, unknown>) => ({
+            id: uid(),
+            school: String(e.school ?? ""),
+            degree: String(e.degree ?? ""),
+            field: String(e.field ?? ""),
+            startDate: String(e.startDate ?? ""),
+            endDate: String(e.endDate ?? ""),
+            details: String(e.details ?? ""),
+          })),
+          projects: (parsed.projects ?? []).map((p: Record<string, unknown>) => ({
+            id: uid(),
+            name: String(p.name ?? ""),
+            link: String(p.link ?? ""),
+            description: String(p.description ?? ""),
+            tech: String(p.tech ?? ""),
+          })),
           certifications: parsed.certifications ?? [],
           achievements: parsed.achievements ?? [],
           languages: parsed.languages ?? [],
-        });
-        toast.success("Resume imported. Review and refine.");
+        };
+
+        const name =
+          resumeData.fullName.trim() || file.name.replace(/\.[^/.]+$/, "") || "Imported resume";
+        const saved = createResume(name, resumeData);
+        useResumeStore.getState().replace(resumeData);
+        setCurrentResumeId(saved.id);
+
+        toast.success("Resume imported and saved to your resumes.");
         router.push("/builder");
       } catch (e) {
         console.error("[upload] failed:", e);
@@ -92,22 +110,25 @@ export default function UploadPage() {
         setPhase("idle");
       }
     },
-    [replace, router]
+    [router],
   );
+
+  const isBusy = phase !== "idle";
 
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+      <main className="mx-auto max-w-3xl px-4 sm:px-6 pt-20 sm:pt-24 pb-16 sm:pb-24">
+        <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           Step 01 · Import
         </div>
-        <h1 className="font-display text-5xl mt-3">Upload your resume.</h1>
-        <p className="mt-3 text-muted-foreground">
+        <h1 className="font-display text-4xl sm:text-5xl mt-3">Upload your resume.</h1>
+        <p className="mt-3 text-muted-foreground leading-relaxed">
           PDF or DOCX. AI extracts every section and drops you into the editor.
         </p>
 
         <label
+          htmlFor="resume-upload"
           onDragEnter={(e) => {
             e.preventDefault();
             setDragging(true);
@@ -123,81 +144,91 @@ export default function UploadPage() {
             const f = e.dataTransfer.files?.[0];
             if (f) handleFile(f);
           }}
-          className={`mt-10 block cursor-pointer border-2 border-dashed rounded-md p-16 text-center transition ${
-            dragging
-              ? "border-foreground bg-secondary"
-              : "border-border hover:border-foreground/60"
-          } ${phase !== "idle" ? "pointer-events-none opacity-80" : ""}`}
+          className={`
+            mt-8 sm:mt-10 block cursor-pointer rounded-md border-2 border-dashed p-10 sm:p-16 text-center
+            transition-all duration-200
+            focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background
+            ${
+              dragging
+                ? "border-foreground bg-secondary"
+                : "border-border hover:border-foreground/60 hover:bg-secondary/30"
+            }
+            ${isBusy ? "pointer-events-none opacity-70" : ""}
+          `}
         >
           <input
+            id="resume-upload"
             type="file"
             accept=".pdf,.docx,.txt"
             className="sr-only"
+            disabled={isBusy}
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f) handleFile(f);
             }}
           />
-          {phase === "idle" && (
-            <>
-              <div className="mx-auto size-12 rounded-full bg-secondary grid place-items-center">
-                <Upload className="size-5" />
-              </div>
-              <div className="mt-4 font-medium">Drop your resume here</div>
-              <div className="text-sm text-muted-foreground">
-                or click to browse · PDF, DOCX up to 10MB
-              </div>
-            </>
-          )}
-          {phase === "reading" && (
-            <Status
-              icon={<FileText className="size-5" />}
-              title="Reading file…"
-              sub="Extracting text from your document."
-            />
-          )}
-          {phase === "parsing" && (
-            <Status
-              icon={<Loader2 className="size-5 animate-spin" />}
-              title="AI is structuring your resume…"
-              sub="Identifying sections, dates, and skills."
-            />
-          )}
+          <div className="transition-all duration-200">
+            {phase === "idle" && (
+              <>
+                <div className="mx-auto size-14 rounded-full bg-secondary grid place-items-center transition-colors duration-200 group-hover:bg-secondary/80">
+                  <FileUp className="size-6" />
+                </div>
+                <div className="mt-4 font-medium text-base">Drop your resume here</div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  or click to browse · PDF, DOCX up to 10MB
+                </div>
+              </>
+            )}
+            {phase === "reading" && (
+              <Status
+                icon={<FileText className="size-5" />}
+                title="Reading file…"
+                sub="Extracting text from your document."
+              />
+            )}
+            {phase === "parsing" && (
+              <Status
+                icon={<Loader2 className="size-5 animate-spin" />}
+                title="AI is structuring your resume…"
+                sub="Identifying sections, dates, and skills."
+              />
+            )}
+          </div>
         </label>
 
-        <div className="mt-8 grid sm:grid-cols-3 gap-3 text-sm">
+        <div className="mt-6 sm:mt-8 grid sm:grid-cols-3 gap-3 text-sm">
           <Bullet>Auto-fills every section</Bullet>
           <Bullet>Keeps formatting clean</Bullet>
           <Bullet>Highlights missing fields</Bullet>
         </div>
 
-        <div className="mt-12 text-sm text-muted-foreground">
+        <div className="mt-10 sm:mt-12 text-sm text-muted-foreground">
           Prefer to start fresh?{" "}
-          <Button variant="link" className="p-0 h-auto" asChild>
+          <Button variant="link" className="p-0 h-auto cursor-pointer" asChild>
             <Link href="/builder">Create a new resume →</Link>
           </Button>
+        </div>
+
+        <div className="mt-8 rounded-md border border-border bg-secondary/30 p-4 flex items-start gap-3 text-sm text-muted-foreground">
+          <AlertCircle className="size-4 mt-0.5 shrink-0" />
+          <p>
+            Your file is processed locally where possible. We never store your resume on our servers
+            unless you explicitly save it.
+          </p>
         </div>
       </main>
     </div>
   );
 }
 
-function Status({
-  icon,
-  title,
-  sub,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  sub: string;
-}) {
+function Status({ icon, title, sub }: { icon: React.ReactNode; title: string; sub: string }) {
   return (
     <>
-      <div className="mx-auto size-12 rounded-full bg-secondary grid place-items-center">
+      <div className="mx-auto size-14 rounded-full bg-secondary grid place-items-center">
         {icon}
       </div>
-      <div className="mt-4 font-medium">{title}</div>
-      <div className="text-sm text-muted-foreground">{sub}</div>
+      <div className="mt-4 font-medium text-base">{title}</div>
+      <div className="text-sm text-muted-foreground mt-1">{sub}</div>
     </>
   );
 }

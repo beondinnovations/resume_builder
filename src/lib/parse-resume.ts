@@ -18,9 +18,7 @@ async function extractFromPdf(file: File): Promise<string> {
     const page = await pdf.getPage(i);
     const content = await page.getTextContent();
     text +=
-      content.items
-        .map((it: unknown) => (it as { str?: string }).str ?? "")
-        .join(" ") + "\n\n";
+      content.items.map((it: unknown) => (it as { str?: string }).str ?? "").join(" ") + "\n\n";
   }
   return text.trim();
 }
@@ -36,7 +34,11 @@ async function extractFromDocx(file: File): Promise<string> {
 import type { ResumeData } from "./resume-types";
 export function resumeToText(r: ResumeData): string {
   const lines: string[] = [];
-  lines.push(r.fullName, r.title, [r.email, r.phone, r.location, r.linkedin, r.github, r.website].filter(Boolean).join(" | "));
+  lines.push(
+    r.fullName,
+    r.title,
+    [r.email, r.phone, r.location, r.linkedin, r.github, r.website].filter(Boolean).join(" | "),
+  );
   if (r.summary) lines.push("\nSUMMARY", r.summary);
   if (r.skills.technical.length || r.skills.soft.length) {
     lines.push("\nSKILLS", [...r.skills.technical, ...r.skills.soft].join(", "));
@@ -50,11 +52,15 @@ export function resumeToText(r: ResumeData): string {
   }
   if (r.education.length) {
     lines.push("\nEDUCATION");
-    r.education.forEach((e) => lines.push(`${e.degree} ${e.field ?? ""} — ${e.school} (${e.startDate}–${e.endDate})`));
+    r.education.forEach((e) =>
+      lines.push(`${e.degree} ${e.field ?? ""} — ${e.school} (${e.startDate}–${e.endDate})`),
+    );
   }
   if (r.projects.length) {
     lines.push("\nPROJECTS");
-    r.projects.forEach((p) => lines.push(`${p.name}: ${p.description}${p.tech ? ` [${p.tech}]` : ""}`));
+    r.projects.forEach((p) =>
+      lines.push(`${p.name}: ${p.description}${p.tech ? ` [${p.tech}]` : ""}`),
+    );
   }
   if (r.certifications.length) lines.push("\nCERTIFICATIONS", r.certifications.join(", "));
   if (r.achievements.length) lines.push("\nACHIEVEMENTS", r.achievements.join("\n"));

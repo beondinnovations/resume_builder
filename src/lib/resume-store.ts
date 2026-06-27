@@ -19,6 +19,6 @@ export const useResumeStore = create<ResumeStore>()(
       replace: (data) => set({ data }),
       reset: () => set({ data: emptyResume }),
     }),
-    { name: "ats-resume-v1" }
-  )
+    { name: "ats-resume-v1" },
+  ),
 );

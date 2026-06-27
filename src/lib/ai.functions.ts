@@ -5,15 +5,11 @@ import { z } from "zod";
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MODEL = "llama-3.3-70b-versatile";
 
-async function callAI(opts: {
-  system: string;
-  user: string;
-  json?: boolean;
-}): Promise<string> {
+async function callAI(opts: { system: string; user: string; json?: boolean }): Promise<string> {
   const key = process.env.GROQ_API_KEY;
   if (!key)
     throw new Error(
-      "GROQ_API_KEY is not configured. Add it to your .env file. Get a free key at https://console.groq.com/keys"
+      "GROQ_API_KEY is not configured. Add it to your .env file. Get a free key at https://console.groq.com/keys",
     );
 
   const res = await fetch(GROQ_API_URL, {
@@ -34,8 +30,7 @@ async function callAI(opts: {
     }),
   });
 
-  if (res.status === 429)
-    throw new Error("Rate limit hit. Please try again in a moment.");
+  if (res.status === 429) throw new Error("Rate limit hit. Please try again in a moment.");
   if (!res.ok) {
     const t = await res.text();
     throw new Error(`Groq API error ${res.status}: ${t.slice(0, 200)}`);
@@ -63,17 +58,17 @@ export async function improveText(input: {
 
   const guides: Record<string, string> = {
     summary:
-      "Rewrite as a 2–3 sentence professional resume summary. Strong, confident, ATS-friendly. No first-person pronouns. Plain prose, no bullets, no markdown.",
+      "Rewrite as a 2–3 sentence professional summary. Open with role, years of experience, and top strengths. Include one quantified achievement or area of expertise. Confident, concise, ATS-friendly. No first-person pronouns, no buzzwords without evidence.",
     bullet:
-      "Rewrite as 3–5 resume bullet points. Start each with a strong past-tense action verb. Quantify when possible. Return as plain lines separated by newlines, NO bullet characters, NO markdown.",
+      "Rewrite as 3–5 resume bullet points. Start each with a strong, varied past-tense action verb. Lead with the outcome/impact (e.g. 'Increased X by Y% by...'). Quantify with $, %, time, scale, or team size. Include relevant tools/technologies. Return as plain lines separated by newlines, NO bullet characters, NO markdown.",
     project:
-      "Rewrite as 2–3 resume bullet points describing this project. Action verbs, technical detail, impact. Return plain lines separated by newlines, no bullets.",
+      "Rewrite as 2–3 resume bullet points describing this project. Cover the technical problem, your actions, and a quantified outcome. Mention tools/technologies and scope. Return as plain lines separated by newlines, NO bullet characters, NO markdown.",
     achievement:
-      "Rewrite as a single concise resume achievement line. Strong verb, quantified, ATS-friendly. No bullets, no markdown.",
+      "Rewrite as a single concise resume achievement line. Strong verb + quantified result + context. No bullets, no markdown.",
   };
   const out = await callAI({
     system:
-      "You are an expert resume writer optimizing for ATS systems. Output ONLY the rewritten content, no preamble, no markdown, no quotes.",
+      "You are an expert resume writer and ATS optimizer. Rewrite input into concise, achievement-oriented resume content. Rules: use strong, varied action verbs; avoid weak verbs like 'Responsible for', 'Helped with', 'Worked on'; lead with quantified outcomes when possible; no first-person pronouns; no unsupported buzzwords; keep bullets 1–2 lines and summaries 2–3 sentences; include scope/tools where relevant. Output ONLY the rewritten content, no preamble, no markdown, no bullet characters, no quotes.",
     user: `${guides[data.mode]}\n\n${data.context ? `Context: ${data.context}\n\n` : ""}Input:\n${data.text}`,
   });
   return { text: out.trim() };
@@ -93,9 +88,7 @@ export async function suggestSkills(input: {
   try {
     const parsed = JSON.parse(out);
     return {
-      technical: Array.isArray(parsed.technical)
-        ? parsed.technical.slice(0, 12)
-        : [],
+      technical: Array.isArray(parsed.technical) ? parsed.technical.slice(0, 12) : [],
       soft: Array.isArray(parsed.soft) ? parsed.soft.slice(0, 8) : [],
     };
   } catch {
@@ -104,12 +97,8 @@ export async function suggestSkills(input: {
 }
 
 /* ── Extract structured resume from raw text ──────────────────────── */
-export async function extractResume(input: {
-  text: string;
-}): Promise<Record<string, unknown>> {
-  const data = z
-    .object({ text: z.string().min(20).max(40000) })
-    .parse(input);
+export async function extractResume(input: { text: string }): Promise<Record<string, unknown>> {
+  const data = z.object({ text: z.string().min(20).max(40000) }).parse(input);
   const out = await callAI({
     system: `Extract resume information from text. Return strict JSON matching this schema:
 {
@@ -134,10 +123,7 @@ Use "" or [] for missing fields. Keep bullets verbatim if present.`,
 }
 
 /* ── Score resume ─────────────────────────────────────────────────── */
-export async function scoreResume(input: {
-  resumeText: string;
-  jobDescription?: string;
-}): Promise<{
+export async function scoreResume(input: { resumeText: string; jobDescription?: string }): Promise<{
   ats: number;
   readability: number;
   keyword: number;
@@ -174,12 +160,8 @@ If no job description provided, set matchPercent to 0 and base keyword score on 
       readability: Number(p.readability) || 0,
       keyword: Number(p.keyword) || 0,
       professionalism: Number(p.professionalism) || 0,
-      missingKeywords: Array.isArray(p.missingKeywords)
-        ? p.missingKeywords.slice(0, 20)
-        : [],
-      suggestions: Array.isArray(p.suggestions)
-        ? p.suggestions.slice(0, 10)
-        : [],
+      missingKeywords: Array.isArray(p.missingKeywords) ? p.missingKeywords.slice(0, 20) : [],
+      suggestions: Array.isArray(p.suggestions) ? p.suggestions.slice(0, 10) : [],
       matchPercent: Number(p.matchPercent) || 0,
     };
   } catch {
