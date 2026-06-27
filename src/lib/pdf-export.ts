@@ -49,7 +49,9 @@ export function exportResumePdf(r: ResumeData, filename = "resume.pdf") {
   // Header
   if (r.fullName) writeWrapped(r.fullName, { size: 20, bold: true });
   if (r.title) writeWrapped(r.title, { size: 11, gap: 2 });
-  const contact = [r.email, r.phone, r.location, r.linkedin, r.github, r.website].filter(Boolean).join("  |  ");
+  const contact = [r.email, r.phone, r.location, r.linkedin, r.github, r.website]
+    .filter(Boolean)
+    .join("  |  ");
   if (contact) writeWrapped(contact, { size: 9, gap: 4 });
 
   // Summary
@@ -63,8 +65,7 @@ export function exportResumePdf(r: ResumeData, filename = "resume.pdf") {
     heading("Skills");
     if (r.skills.technical.length)
       writeWrapped(`Technical: ${r.skills.technical.join(", ")}`, { size: 10 });
-    if (r.skills.soft.length)
-      writeWrapped(`Soft: ${r.skills.soft.join(", ")}`, { size: 10 });
+    if (r.skills.soft.length) writeWrapped(`Soft: ${r.skills.soft.join(", ")}`, { size: 10 });
   }
 
   // Experience
@@ -72,7 +73,9 @@ export function exportResumePdf(r: ResumeData, filename = "resume.pdf") {
     heading("Experience");
     r.experience.forEach((e) => {
       writeWrapped(`${e.role}${e.company ? ` — ${e.company}` : ""}`, { size: 11, bold: true });
-      const meta = [e.location, [e.startDate, e.endDate].filter(Boolean).join(" – ")].filter(Boolean).join("  |  ");
+      const meta = [e.location, [e.startDate, e.endDate].filter(Boolean).join(" – ")]
+        .filter(Boolean)
+        .join("  |  ");
       if (meta) writeWrapped(meta, { size: 9, gap: 2 });
       e.bullets.filter(Boolean).forEach((b) => writeWrapped(`•  ${b}`, { size: 10 }));
       y += 4;
@@ -93,10 +96,13 @@ export function exportResumePdf(r: ResumeData, filename = "resume.pdf") {
   if (r.education.length) {
     heading("Education");
     r.education.forEach((e) => {
-      writeWrapped(`${e.degree}${e.field ? `, ${e.field}` : ""}${e.school ? ` — ${e.school}` : ""}`, {
-        size: 11,
-        bold: true,
-      });
+      writeWrapped(
+        `${e.degree}${e.field ? `, ${e.field}` : ""}${e.school ? ` — ${e.school}` : ""}`,
+        {
+          size: 11,
+          bold: true,
+        },
+      );
       const meta = [e.startDate, e.endDate].filter(Boolean).join(" – ");
       if (meta) writeWrapped(meta, { size: 9, gap: 2 });
       if (e.details) writeWrapped(e.details, { size: 10, gap: 2 });
@@ -121,8 +127,7 @@ export function exportResumePdf(r: ResumeData, filename = "resume.pdf") {
 
 /* Minimal DOCX export — well-formed Office Open XML */
 export async function exportResumeDocx(r: ResumeData, filename = "resume.docx") {
-  const esc = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const para = (text: string, opts: { bold?: boolean; size?: number; heading?: boolean } = {}) => {
     const sz = (opts.size ?? 22).toString(); // half-points: 22 = 11pt
     const b = opts.bold ? "<w:b/>" : "";
@@ -133,10 +138,15 @@ export async function exportResumeDocx(r: ResumeData, filename = "resume.docx") 
   const body: string[] = [];
   if (r.fullName) body.push(para(r.fullName, { bold: true, size: 36 }));
   if (r.title) body.push(para(r.title, { size: 22 }));
-  const contact = [r.email, r.phone, r.location, r.linkedin, r.github, r.website].filter(Boolean).join("  |  ");
+  const contact = [r.email, r.phone, r.location, r.linkedin, r.github, r.website]
+    .filter(Boolean)
+    .join("  |  ");
   if (contact) body.push(para(contact, { size: 18 }));
 
-  if (r.summary) { body.push(heading("Professional Summary")); body.push(para(r.summary)); }
+  if (r.summary) {
+    body.push(heading("Professional Summary"));
+    body.push(para(r.summary));
+  }
   if (r.skills.technical.length || r.skills.soft.length) {
     body.push(heading("Skills"));
     if (r.skills.technical.length) body.push(para(`Technical: ${r.skills.technical.join(", ")}`));
@@ -146,7 +156,14 @@ export async function exportResumeDocx(r: ResumeData, filename = "resume.docx") 
     body.push(heading("Experience"));
     r.experience.forEach((e) => {
       body.push(para(`${e.role} — ${e.company}`, { bold: true }));
-      body.push(para([e.location, [e.startDate, e.endDate].filter(Boolean).join(" – ")].filter(Boolean).join("  |  "), { size: 18 }));
+      body.push(
+        para(
+          [e.location, [e.startDate, e.endDate].filter(Boolean).join(" – ")]
+            .filter(Boolean)
+            .join("  |  "),
+          { size: 18 },
+        ),
+      );
       e.bullets.forEach((b) => body.push(para(`•  ${b}`)));
     });
   }
@@ -164,9 +181,18 @@ export async function exportResumeDocx(r: ResumeData, filename = "resume.docx") 
       body.push(para([e.startDate, e.endDate].filter(Boolean).join(" – "), { size: 18 }));
     });
   }
-  if (r.certifications.length) { body.push(heading("Certifications")); r.certifications.forEach((c) => body.push(para(`•  ${c}`))); }
-  if (r.achievements.length) { body.push(heading("Achievements")); r.achievements.forEach((a) => body.push(para(`•  ${a}`))); }
-  if (r.languages.length) { body.push(heading("Languages")); body.push(para(r.languages.join(", "))); }
+  if (r.certifications.length) {
+    body.push(heading("Certifications"));
+    r.certifications.forEach((c) => body.push(para(`•  ${c}`)));
+  }
+  if (r.achievements.length) {
+    body.push(heading("Achievements"));
+    r.achievements.forEach((a) => body.push(para(`•  ${a}`)));
+  }
+  if (r.languages.length) {
+    body.push(heading("Languages"));
+    body.push(para(r.languages.join(", ")));
+  }
 
   const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -193,7 +219,9 @@ export async function exportResumeDocx(r: ResumeData, filename = "resume.docx") 
   ]);
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = filename; a.click();
+  a.href = url;
+  a.download = filename;
+  a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
@@ -220,12 +248,16 @@ async function buildZip(files: { path: string; data: string }[]): Promise<Blob> 
     const local = new Uint8Array(30 + nameBytes.length + dataBytes.length);
     const dv = new DataView(local.buffer);
     dv.setUint32(0, 0x04034b50, true);
-    dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
-    dv.setUint16(10, 0, true); dv.setUint16(12, 0, true);
+    dv.setUint16(4, 20, true);
+    dv.setUint16(6, 0, true);
+    dv.setUint16(8, 0, true);
+    dv.setUint16(10, 0, true);
+    dv.setUint16(12, 0, true);
     dv.setUint32(14, crc, true);
     dv.setUint32(18, dataBytes.length, true);
     dv.setUint32(22, dataBytes.length, true);
-    dv.setUint16(26, nameBytes.length, true); dv.setUint16(28, 0, true);
+    dv.setUint16(26, nameBytes.length, true);
+    dv.setUint16(28, 0, true);
     local.set(nameBytes, 30);
     local.set(dataBytes, 30 + nameBytes.length);
     fileRecords.push(local);
@@ -233,15 +265,20 @@ async function buildZip(files: { path: string; data: string }[]): Promise<Blob> 
     const central = new Uint8Array(46 + nameBytes.length);
     const cv = new DataView(central.buffer);
     cv.setUint32(0, 0x02014b50, true);
-    cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
-    cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
-    cv.setUint16(12, 0, true); cv.setUint16(14, 0, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0, true);
+    cv.setUint16(10, 0, true);
+    cv.setUint16(12, 0, true);
+    cv.setUint16(14, 0, true);
     cv.setUint32(16, crc, true);
     cv.setUint32(20, dataBytes.length, true);
     cv.setUint32(24, dataBytes.length, true);
     cv.setUint16(28, nameBytes.length, true);
-    cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
-    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true);
+    cv.setUint16(30, 0, true);
+    cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true);
+    cv.setUint16(36, 0, true);
     cv.setUint32(38, 0, true);
     cv.setUint32(42, offset, true);
     central.set(nameBytes, 46);
@@ -260,8 +297,12 @@ async function buildZip(files: { path: string; data: string }[]): Promise<Blob> 
   ev.setUint32(16, offset, true);
 
   const parts: BlobPart[] = [
-    ...fileRecords.map((u) => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer),
-    ...centralRecords.map((u) => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer),
+    ...fileRecords.map(
+      (u) => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer,
+    ),
+    ...centralRecords.map(
+      (u) => u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer,
+    ),
     end.buffer.slice(end.byteOffset, end.byteOffset + end.byteLength) as ArrayBuffer,
   ];
   return new Blob(parts, {

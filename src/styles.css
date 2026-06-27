@@ -42,10 +42,10 @@
   --radius: 0.25rem;
 
   /* Paper & Ink — editorial, ATS-clean */
-  --paper: oklch(0.972 0.008 85);          /* #f5f3ee */
-  --paper-2: oklch(0.93 0.012 85);         /* #e8e4dd */
-  --ink: oklch(0.18 0 0);                  /* #2d2d2d */
-  --ink-deep: oklch(0.08 0 0);             /* #0d0d0d */
+  --paper: oklch(0.972 0.008 85); /* #f5f3ee */
+  --paper-2: oklch(0.93 0.012 85); /* #e8e4dd */
+  --ink: oklch(0.18 0 0); /* #2d2d2d */
+  --ink-deep: oklch(0.08 0 0); /* #0d0d0d */
   --rule: oklch(0.85 0.01 85);
 
   --background: var(--paper);
